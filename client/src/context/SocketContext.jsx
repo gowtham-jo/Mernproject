@@ -18,7 +18,21 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
-    const socketUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
+    // Smart Socket.IO URL resolution
+    const getSocketURL = () => {
+      if (import.meta.env.VITE_SOCKET_URL) {
+        return import.meta.env.VITE_SOCKET_URL;
+      }
+      if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+          return 'http://localhost:5000';
+        }
+      }
+      return 'https://mernproject-3ht6.onrender.com';
+    };
+
+    const socketUrl = getSocketURL();
     const newSocket = io(socketUrl, {
       transports: ['websocket', 'polling'],
     });

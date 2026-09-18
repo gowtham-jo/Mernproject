@@ -37,24 +37,44 @@ app.use(
 
 // Enable CORS
 const allowedOrigins = [
-  process.env.CLIENT_URL || 'http://localhost:5173',
+  'https://mernproject-eta.vercel.app',
+  'https://mernproject-3ht6.onrender.com',
+  process.env.CLIENT_URL,
+  'http://localhost:5173',
   'http://localhost:3000',
+  'http://localhost:5000',
   'http://localhost:5174',
-];
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5000',
+  'http://127.0.0.1:5174',
+].filter(Boolean);
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // allow requests with no origin (like mobile apps or curl)
-      if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:')) {
-        callback(null, true);
-      } else {
-        callback(null, true); // Permissive in local development
-      }
-    },
-    credentials: true,
-  })
-);
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
+
+    const isExplicitlyAllowed = allowedOrigins.includes(origin) || allowedOrigins.includes(origin.replace(/\/$/, ''));
+    const isLocalhost = origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:');
+    const isVercel = origin.endsWith('.vercel.app') || origin.includes('vercel.app');
+    const isRender = origin.endsWith('.onrender.com') || origin.includes('onrender.com');
+
+    if (isExplicitlyAllowed || isLocalhost || isVercel || isRender) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Permissive to prevent accidental CORS blocks
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  exposedHeaders: ['Set-Cookie'],
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Request logging in dev
 if (process.env.NODE_ENV === 'development') {

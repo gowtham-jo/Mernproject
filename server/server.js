@@ -9,11 +9,44 @@ dotenv.config();
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 
+// Allowed origins for Socket.IO
+const socketAllowedOrigins = [
+  'https://mernproject-eta.vercel.app',
+  'https://mernproject-3ht6.onrender.com',
+  process.env.CLIENT_URL,
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:5000',
+  'http://localhost:5174',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5000',
+  'http://127.0.0.1:5174',
+].filter(Boolean);
+
 // Socket.IO configuration
 const io = new SocketIOServer(server, {
   cors: {
-    origin: '*',
-    methods: ['GET', 'POST'],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const isAllowed =
+        socketAllowedOrigins.includes(origin) ||
+        socketAllowedOrigins.includes(origin.replace(/\/$/, '')) ||
+        origin.startsWith('http://localhost:') ||
+        origin.startsWith('http://127.0.0.1:') ||
+        origin.endsWith('.vercel.app') ||
+        origin.includes('vercel.app') ||
+        origin.endsWith('.onrender.com') ||
+        origin.includes('onrender.com');
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
   },
 });
 
