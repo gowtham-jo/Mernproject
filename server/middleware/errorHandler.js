@@ -4,12 +4,13 @@ export const errorHandler = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
-  if (process.env.NODE_ENV === 'development') {
-    console.error('[Error Details]', {
-      message: err.message,
-      stack: err.stack,
-      statusCode: err.statusCode,
-    });
+  if (err.statusCode >= 500 || process.env.NODE_ENV === 'development') {
+    if (err.statusCode !== 404) {
+      console.error('[Error Details]', {
+        message: err.message,
+        statusCode: err.statusCode,
+      });
+    }
   }
 
   // Mongoose duplicate key error (code 11000)

@@ -101,7 +101,17 @@ app.use('/api/auth', authLimiter);
 // Serve static uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Health check endpoint
+// Root & Health check endpoints
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: '🚀 LearnHub LMS Backend API is running successfully.',
+    status: 'online',
+    version: '1.0.0',
+    docs: '/api/health',
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,
