@@ -1,0 +1,27 @@
+{
+  "name": "learnhub-lms",
+  "version": "1.0.0",
+  "description": "LearnHub LMS - Complete Modern Full-Stack MERN Learning Management System",
+  "private": true,
+  "scripts": {
+    "install-all": "npm install --prefix server && npm install --prefix client",
+    "build": "npm run build --prefix client",
+    "start": "npm start --prefix server",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "seed": "npm run seed --prefix server"
+  },
+  "keywords": [
+    "mern",
+    "lms",
+    "learning-management-system",
+    "react",
+    "nodejs",
+    "express",
+    "mongodb",
+    "socketio",
+    "tailwindcss"
+  ],
+  "author": "Gowtham Kumar",
+  "license": "MIT"
+}
