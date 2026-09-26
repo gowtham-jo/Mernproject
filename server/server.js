@@ -1,10 +1,14 @@
+// Load environment variables FIRST, before any other module imports.
+// In ES modules, static `import` statements are hoisted and run before
+// any top-level code. We use a dedicated env-loader module to ensure
+// dotenv.config() executes at module evaluation time, before app.js reads
+// process.env.
+import './config/env.js';
+
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
-import dotenv from 'dotenv';
 import app from './app.js';
 import { connectDB } from './config/db.js';
-
-dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
@@ -125,17 +129,38 @@ io.on('connection', (socket) => {
   });
 });
 
-// Start DB and HTTP server
+// Start DB FIRST, then HTTP server — never accept requests before DB is ready
 const startServer = async () => {
+  // Validate critical environment variables
+  const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'];
+  const missingVars = requiredEnvVars.filter((v) => !process.env[v]);
+
+  if (missingVars.length > 0) {
+    console.error('=========================================');
+    console.error(`[FATAL] Missing required environment variables: ${missingVars.join(', ')}`);
+    console.error('The server cannot start without these variables configured.');
+    console.error('=========================================');
+    process.exit(1);
+  }
+
+  // Connect to MongoDB (will exit process on failure)
   await connectDB();
-  server.listen(PORT, () => {
+
+  // Only start accepting HTTP requests after DB is connected
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`=========================================`);
     console.log(`🚀 LearnHub LMS Backend Server Running`);
     console.log(`📡 URL: http://localhost:${PORT}`);
     console.log(`⚡ Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`💬 Socket.IO Real-time Engine: Active`);
+    console.log(`🔒 MONGO_URI configured: true`);
+    console.log(`🔒 JWT_SECRET configured: true`);
+    console.log(`🔒 CLIENT_URL: ${process.env.CLIENT_URL || '(not set, using defaults)'}`);
     console.log(`=========================================`);
   });
 };
 
-startServer();
+startServer().catch((err) => {
+  console.error('[FATAL] Unhandled error during server startup:', err.message);
+  process.exit(1);
+});

@@ -55,6 +55,25 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
+  // Mongoose buffering timeout (DB disconnected when query was attempted)
+  if (
+    err.name === 'MongooseError' ||
+    (err.message && err.message.includes('buffering timed out'))
+  ) {
+    return res.status(503).json({
+      success: false,
+      message: 'Service temporarily unavailable. Please try again in a moment.',
+    });
+  }
+
+  // MongoDB server errors (network, auth, etc.)
+  if (err.name === 'MongoServerError' || err.name === 'MongoNetworkError') {
+    return res.status(503).json({
+      success: false,
+      message: 'A database error occurred. Please try again later.',
+    });
+  }
+
   return res.status(err.statusCode).json({
     success: false,
     message: err.message || 'An unexpected internal server error occurred.',

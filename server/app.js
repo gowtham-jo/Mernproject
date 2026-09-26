@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getDBStatus } from './config/db.js';
 
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
@@ -113,10 +114,16 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    status: 'healthy',
-    message: 'LearnHub LMS API is online and running smoothly.',
+  const dbStatus = getDBStatus();
+  const isHealthy = dbStatus === 'connected';
+
+  res.status(isHealthy ? 200 : 503).json({
+    success: isHealthy,
+    status: isHealthy ? 'ok' : 'error',
+    database: dbStatus,
+    message: isHealthy
+      ? 'LearnHub LMS API is online and running smoothly.'
+      : 'LearnHub LMS API is running but the database is not connected.',
     timestamp: new Date().toISOString(),
   });
 });
