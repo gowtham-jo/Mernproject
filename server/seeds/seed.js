@@ -16,13 +16,17 @@ import Announcement from '../models/Announcement.js';
 
 dotenv.config();
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/learnhub_lms';
+const MONGODB_URI = process.env.MONGODB_URI;
 const DEFAULT_PASSWORD = process.env.SEED_PASSWORD || 'Password123!';
 
 const seedDatabase = async () => {
   try {
+    if (!MONGODB_URI) {
+      console.error('[Seed] FATAL: MONGODB_URI environment variable is not configured.');
+      process.exit(1);
+    }
     console.log('[Seed] Connecting to MongoDB...');
-    await mongoose.connect(MONGO_URI);
+    await mongoose.connect(MONGODB_URI);
     console.log('[Seed] Connected. Clearing old database collections...');
 
     // Clear existing data

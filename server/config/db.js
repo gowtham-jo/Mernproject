@@ -4,25 +4,26 @@ import mongoose from 'mongoose';
  * Connect to MongoDB with production-grade error handling.
  *
  * Guarantees:
- * - MONGO_URI environment variable MUST be set (no silent fallback).
+ * - MONGODB_URI environment variable MUST be set (no silent fallback).
+ * - NO localhost/127.0.0.1 fallback — production must use MongoDB Atlas.
  * - Process exits on connection failure so the server never accepts
  *   requests against a disconnected database.
  * - Connection string and credentials are NEVER logged.
  */
 export const connectDB = async () => {
-  const uri = process.env.MONGO_URI;
+  const uri = process.env.MONGODB_URI;
 
   if (!uri) {
     console.error('=========================================');
-    console.error('[FATAL] MONGO_URI environment variable is not configured.');
+    console.error('[FATAL] MONGODB_URI environment variable is not configured.');
     console.error('The server cannot start without a database connection.');
-    console.error('Set MONGO_URI in your environment variables or .env file.');
+    console.error('Set MONGODB_URI in your environment variables or .env file.');
     console.error('=========================================');
     process.exit(1);
   }
 
-  // Diagnostic log — safe: never prints the actual URI
-  console.log('[Database] MONGO_URI configured: true');
+  console.log('[Database] MONGODB_URI configured: true');
+  console.log('[Database] Connecting to MongoDB...');
 
   // Register connection lifecycle event listeners (before connecting)
   mongoose.connection.on('connected', () => {
@@ -39,16 +40,14 @@ export const connectDB = async () => {
 
   try {
     await mongoose.connect(uri, {
-      // Fail fast if the MongoDB server cannot be found within 10s
       serverSelectionTimeoutMS: 10000,
-      // Timeout socket operations after 45s
       socketTimeoutMS: 45000,
     });
   } catch (error) {
     console.error('=========================================');
     console.error(`[FATAL] Failed to connect to MongoDB: ${error.message}`);
     console.error('Please verify:');
-    console.error('  1. MONGO_URI is a valid MongoDB connection string');
+    console.error('  1. MONGODB_URI is a valid MongoDB connection string');
     console.error('  2. MongoDB Atlas Network Access allows this IP (use 0.0.0.0/0 for Render)');
     console.error('  3. Database user credentials are correct');
     console.error('  4. The database cluster is running');

@@ -132,7 +132,7 @@ io.on('connection', (socket) => {
 // Start DB FIRST, then HTTP server — never accept requests before DB is ready
 const startServer = async () => {
   // Validate critical environment variables
-  const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'];
+  const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET'];
   const missingVars = requiredEnvVars.filter((v) => !process.env[v]);
 
   if (missingVars.length > 0) {
@@ -153,7 +153,7 @@ const startServer = async () => {
     console.log(`📡 URL: http://localhost:${PORT}`);
     console.log(`⚡ Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`💬 Socket.IO Real-time Engine: Active`);
-    console.log(`🔒 MONGO_URI configured: true`);
+    console.log(`🔒 MONGODB_URI configured: true`);
     console.log(`🔒 JWT_SECRET configured: true`);
     console.log(`🔒 CLIENT_URL: ${process.env.CLIENT_URL || '(not set, using defaults)'}`);
     console.log(`=========================================`);
